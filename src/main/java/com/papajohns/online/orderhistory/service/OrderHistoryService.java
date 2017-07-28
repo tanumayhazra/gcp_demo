@@ -23,7 +23,7 @@ public class OrderHistoryService {
         PubsubMessage resultMessage = PubsubMessage.getDefaultInstance();
         Message message = orderHistoryDao.retrieve(orderNumber);
         return resultMessage.toBuilder()
-                .setMessageId(message.getMessageId())
+                .setMessageId(message.getOrderNumber())
                 .setData(ByteString.copyFromUtf8(message.getData()))
                 .build();
     }
