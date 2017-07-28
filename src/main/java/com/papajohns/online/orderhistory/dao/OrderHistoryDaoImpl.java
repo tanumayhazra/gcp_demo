@@ -9,35 +9,40 @@ import com.google.cloud.datastore.KeyFactory;
 import com.google.cloud.datastore.Query;
 import com.google.cloud.datastore.QueryResults;
 import com.google.cloud.datastore.StructuredQuery;
+import com.google.pubsub.v1.PubsubMessage;
+import com.papajohns.json.JSONObject;
+import com.papajohns.json.JSONParser;
+import com.papajohns.online.orderhistory.object.Message;
 
+import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderHistoryDaoImpl implements OrderHistoryDao{
-    private String messagesKind = "messages";
+    private String messagesKind = "order";
     private KeyFactory keyFactory = getDatastoreInstance().newKeyFactory().setKind(messagesKind);
 
     @Override
-    public void save(String message) {
+    public void save(PubsubMessage message) {
         // Save message to "messages"
         Datastore datastore = getDatastoreInstance();
-        Key key = datastore.allocateId(keyFactory.newKey());
+        String data = message.getData().toString();
+        JSONObject jsonObjectEntity = JSONParser.parseAsJSONObjectTM(data);
+        String orerNumber = jsonObjectEntity.getAsJSONObjectTM("payload").getAsString("orderNumber");
 
-        Entity.Builder messageEntityBuilder = Entity.newBuilder(key)
-                .set("messageId", message);
-
-        /*if (message.getData() != null) {
-            messageEntityBuilder = messageEntityBuilder.set("data", message.getData());
+        Key key = datastore.allocateId(keyFactory.newKey(orerNumber));
+        Entity.Builder messageEntityBuilder = Entity.newBuilder(key);
+        if (message.getData() != null) {
+            messageEntityBuilder = messageEntityBuilder.set(Message.DATA, message.getData().toString());
         }
-
         if (message.getPublishTime() != null) {
-            messageEntityBuilder = messageEntityBuilder.set("publishTime", message.getPublishTime());
-        }*/
-        datastore.put(messageEntityBuilder.build());
+            messageEntityBuilder = messageEntityBuilder.set(Message.PUBLISH_TIME, jsonObjectEntity.getAsString("timeStamp"));
+        }
+        datastore.add(messageEntityBuilder.build());
     }
 
     @Override
-    public List<String> retrieve(int limit) {
+    public List<Message> retrieve(int limit) {
         // Get Message saved in Datastore
         Datastore datastore = getDatastoreInstance();
         Query<Entity> query =
@@ -48,21 +53,57 @@ public class OrderHistoryDaoImpl implements OrderHistoryDao{
                         .build();
         QueryResults<Entity> results = datastore.run(query);
 
-        List<String> messages = new ArrayList<>();
+        List<Message> messages = new ArrayList<>();
         while (results.hasNext()) {
             Entity entity = results.next();
-            String message = new String(entity.getString("messageId"));
-            /*String data = entity.getString("data");
+            Message message = new Message(entity.getKey().getName());
+            String data = entity.getString(Message.DATA);
             if (data != null) {
                 message.setData(data);
             }
-            String publishTime = entity.getString("publishTime");
+            String publishTime = entity.getString(Message.PUBLISH_TIME);
             if (publishTime != null) {
                 message.setPublishTime(publishTime);
-            }*/
+            }
             messages.add(message);
         }
         return messages;
+    }
+
+    /**
+     * Retrieve stored messages for given orderNumber
+     *
+     * @param orderNumber number of messages
+     * @return Message
+     */
+    @Override
+    public Message retrieve(String orderNumber) {
+        Entity messageEntity = getDatastoreInstance().get(keyFactory.newKey(orderNumber));
+        return entityToMessage(messageEntity);
+    }
+
+    /**
+     * Retrieve stored messages for given duration
+     *
+     * @param startTime start of the duration
+     * @param endTime   end of the duration
+     * @return Message
+     */
+    @Override
+    public List<Message> retrieve(String startTime, String endTime) {
+        Query<Entity> query = Query.newEntityQueryBuilder()
+                .setKind(messagesKind)
+                .setFilter(StructuredQuery.PropertyFilter.gt(Message.PUBLISH_TIME, startTime))
+                .build();
+        QueryResults<Entity> resultList = getDatastoreInstance().run(query);
+        return null;
+    }
+
+    private Message entityToMessage(Entity entity){
+        return new Message.Builder()
+                .orderNumber(entity.getKey().getName())
+                .publishTime(entity.getString(Message.PUBLISH_TIME))
+                .data(entity.getString(Message.DATA)).build();
     }
 
     private Datastore getDatastoreInstance() {
