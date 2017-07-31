@@ -70,4 +70,16 @@ public class Message {
     public void setData(String data) {
         this.data = data;
     }
+
+    /**
+     * Method to convert the object to a JSON String
+     *
+     * @return
+     */
+    public String toString() {
+        String result = "{ objectNumber : " +orderNumber+ ", data : "
+                +data+", publishTime : " +publishTime+ "}";
+
+        return result;
+    }
 }

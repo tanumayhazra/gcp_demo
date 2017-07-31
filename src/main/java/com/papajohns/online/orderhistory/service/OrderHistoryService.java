@@ -1,13 +1,12 @@
 package com.papajohns.online.orderhistory.service;
 
-import com.google.protobuf.Timestamp;
-import com.google.pubsub.v1.PubsubMessage;
 import com.papajohns.online.orderhistory.dao.OrderHistoryDao;
 import com.papajohns.online.orderhistory.object.Message;
 import org.springframework.stereotype.Service;
-import com.google.protobuf.ByteString;
 
 import javax.inject.Inject;
+import java.util.List;
+import java.util.ListIterator;
 
 @Service
 public class OrderHistoryService {
@@ -15,17 +14,25 @@ public class OrderHistoryService {
     @Inject
     private OrderHistoryDao orderHistoryDao;
 
-    public void storeDetail(PubsubMessage data){
+    public void storeDetail(String data){
         orderHistoryDao.save(data);
     }
 
-    public PubsubMessage getOrderDetail(String orderNumber){
-        PubsubMessage resultMessage = PubsubMessage.getDefaultInstance();
+    public String getOrderDetail(String orderNumber){
         Message message = orderHistoryDao.retrieve(orderNumber);
-        return resultMessage.toBuilder()
-                .setMessageId(message.getOrderNumber())
-                .setData(ByteString.copyFromUtf8(message.getData()))
-                .build();
+        return message.toString();
+    }
+
+    public String getOrderDetails(String startTime, String endTime){
+        StringBuilder message = new StringBuilder("");
+        List<Message> messages = orderHistoryDao.retrieve(startTime,endTime);
+        ListIterator<Message> it = messages.listIterator();
+        while(it.hasNext()){
+            message.append("[");
+            message.append(it.next());
+            message.append("]");
+        }
+        return message.toString();
     }
 
 }

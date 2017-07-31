@@ -9,7 +9,7 @@ public interface OrderHistoryDao {
 
 
     /** Save message to persistent storage. */
-    void save(PubsubMessage message);
+    void save(String message);
 
     /**
      * Retrieve most recent stored messages.
