@@ -64,11 +64,10 @@
             <artifactId>pj-json</artifactId>
             <version>1.0.0</version>
         </dependency>
-
         <dependency>
             <groupId>com.google.cloud</groupId>
             <artifactId>google-cloud-pubsub</artifactId>
-            <version>0.20.3-beta</version>
+            <version>0.21.0-beta</version>
         </dependency>
         <dependency>
             <groupId>com.google.cloud</groupId>

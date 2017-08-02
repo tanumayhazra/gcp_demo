@@ -2,12 +2,10 @@ package com.papajohns.online.orderhistory.dao;
 
 
 import com.google.cloud.datastore.*;
-import com.google.pubsub.v1.PubsubMessage;
 import com.papajohns.json.JSONObject;
 import com.papajohns.json.JSONParser;
 import com.papajohns.online.orderhistory.object.Message;
 
-import java.awt.print.Book;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,10 +23,10 @@ public class OrderHistoryDaoImpl implements OrderHistoryDao{
 
             IncompleteKey key = keyFactory.newKey(orerNumber);
             FullEntity<IncompleteKey> messageEntity = Entity.newBuilder(key)
-                    .set(Message.DATA, message)
+                    .set(Message.DATA, StringValue.newBuilder(message).setExcludeFromIndexes(true).build())
                     .set(Message.PUBLISH_TIME, jsonObjectEntity.getAsString("timeStamp"))
                     .build();
-            datastore.put(messageEntity);
+            datastore.add(messageEntity);
         }
     }
 
