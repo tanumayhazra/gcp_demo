@@ -5,11 +5,15 @@ import com.google.cloud.datastore.*;
 import com.papajohns.json.JSONObject;
 import com.papajohns.json.JSONParser;
 import com.papajohns.online.orderhistory.object.Message;
+import com.papajohns.online.orderhistory.service.OrderHistoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class OrderHistoryDaoImpl implements OrderHistoryDao{
+    private static final Logger logger = LoggerFactory.getLogger(OrderHistoryDaoImpl.class);
     private String messagesKind = "order";
     private KeyFactory keyFactory = getDatastoreInstance().newKeyFactory().setKind(messagesKind);
 
@@ -19,9 +23,9 @@ public class OrderHistoryDaoImpl implements OrderHistoryDao{
         Datastore datastore = getDatastoreInstance();
         if (message != null) {
             JSONObject jsonObjectEntity = JSONParser.parseAsJSONObjectTM(message);
-            String orerNumber = jsonObjectEntity.getAsJSONObjectTM("payload").getAsString("orderNumber");
-
-            IncompleteKey key = keyFactory.newKey(orerNumber);
+            String orderNumber = jsonObjectEntity.getAsJSONObjectTM("payload").getAsString("orderNumber");
+            logger.info("Received Message with orderNumber "+orderNumber);
+            IncompleteKey key = keyFactory.newKey(orderNumber);
             FullEntity<IncompleteKey> messageEntity = Entity.newBuilder(key)
                     .set(Message.DATA, StringValue.newBuilder(message).setExcludeFromIndexes(true).build())
                     .set(Message.PUBLISH_TIME, jsonObjectEntity.getAsString("timeStamp"))
@@ -67,6 +71,7 @@ public class OrderHistoryDaoImpl implements OrderHistoryDao{
      */
     @Override
     public Message retrieve(String orderNumber) {
+        logger.info("retrieving payload with orderNumber "+orderNumber);
         Entity messageEntity = getDatastoreInstance().get(keyFactory.newKey(orderNumber));
         return entityToMessage(messageEntity);
     }

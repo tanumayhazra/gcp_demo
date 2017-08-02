@@ -65,8 +65,9 @@ public class OrderHistoryService {
 
     public void readSubscriber()throws Exception {
         String PROJECT_ID = ServiceOptions.getDefaultProjectId();
+        logger.info("Received subscribed Message with PROJECT_ID "+PROJECT_ID);
         TopicName topic = TopicName.create(PROJECT_ID, "my-topic-id");
-        SubscriptionName subscription = SubscriptionName.create(PROJECT_ID, "my-topic-id");
+        SubscriptionName subscription = SubscriptionName.create(PROJECT_ID, "my-subscription-id");
 
         try (SubscriptionAdminClient subscriptionAdminClient = SubscriptionAdminClient.create()) {
             subscriptionAdminClient.createSubscription(subscription, topic, PushConfig.getDefaultInstance(), 0);
@@ -89,7 +90,7 @@ public class OrderHistoryService {
                         @Override
                         public void failed(Subscriber.State from, Throwable failure) {
                             // Handle failure. This is called when the Subscriber encountered a fatal error and is shutting down.
-                            System.err.println(failure);
+                            logger.error(failure.toString());
                         }
                     },
                     MoreExecutors.directExecutor());
