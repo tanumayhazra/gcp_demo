@@ -23,11 +23,12 @@ public class OrderHistoryDaoImpl implements OrderHistoryDao{
             JSONObject jsonObjectEntity = JSONParser.parseAsJSONObjectTM(message);
             String orerNumber = jsonObjectEntity.getAsJSONObjectTM("payload").getAsString("orderNumber");
 
-            Key key = datastore.allocateId(keyFactory.newKey(orerNumber));
-            Entity.Builder messageEntityBuilder = Entity.newBuilder(key);
-            messageEntityBuilder = messageEntityBuilder.set(Message.DATA, message);
-            messageEntityBuilder = messageEntityBuilder.set(Message.PUBLISH_TIME, jsonObjectEntity.getAsString("timeStamp"));
-            datastore.add(messageEntityBuilder.build());
+            IncompleteKey key = keyFactory.newKey(orerNumber);
+            FullEntity<IncompleteKey> messageEntity = Entity.newBuilder(key)
+                    .set(Message.DATA, message)
+                    .set(Message.PUBLISH_TIME, jsonObjectEntity.getAsString("timeStamp"))
+                    .build();
+            datastore.put(messageEntity);
         }
     }
 

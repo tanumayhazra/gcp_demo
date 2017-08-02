@@ -8,6 +8,12 @@ public class Message {
     private String orderNumber;
     private String publishTime;
     private String data;
+   /* private String eventId;
+    private String businessDate;
+    private String orderDate;
+    private String headerId;
+    private String orderType;
+    private String methodOfPayment;*/
 
     public Message(String orderNumber) {
         this.orderNumber = orderNumber;

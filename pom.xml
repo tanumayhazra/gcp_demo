@@ -88,7 +88,7 @@
     </dependencies>
 
     <build>
-        <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF/classes</outputDirectory>
+        <outputDirectory>${project.build.directory}/${project.build.finalName}/WEB-INF</outputDirectory>
         <plugins>
                 <plugin>
                     <groupId>com.google.cloud.tools</groupId>
